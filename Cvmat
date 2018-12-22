@@ -1,0 +1,186 @@
+综述:
+OpenCV有针对矩阵操作的C语言函数. 许多其他方法提供了更加方便的C++接口，其效率与OpenCV一样.
+OpenCV将向量作为1维矩阵处理.
+矩阵按行存储，每行有4字节的校整.
+分配矩阵空间:
+CvMat* cvCreateMat(int rows, int cols, int type);
+type: 矩阵元素类型. 格式为CV_<bit_depth>(S|U|F)C<number_of_channels>. 
+例如: CV_8UC1 表示8位无符号单通道矩阵, CV_32SC2表示32位有符号双通道矩阵.
+例程:
+CvMat* M = cvCreateMat(4,4,CV_32FC1); 
+释放矩阵空间:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+cvReleaseMat(&M);
+复制矩阵:
+CvMat* M1 = cvCreateMat(4,4,CV_32FC1);
+CvMat* M2;
+M2=cvCloneMat(M1);
+初始化矩阵:
+double a[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+CvMat Ma=cvMat(3, 4, CV_64FC1, a);
+另一种方法: 
+CvMat Ma;
+cvInitMatHeader(&Ma, 3, 4, CV_64FC1, a);
+   
+初始化矩阵为单位阵:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+cvSetIdentity(M); // 这里似乎有问题，不成功
+存取矩阵元素
+
+假设需要存取一个2维浮点矩阵的第(i,j)个元素.
+间接存取矩阵元素:
+cvmSet(M,i,j,2.0); // Set M(i,j)
+t = cvmGet(M,i,j); // Get M(i,j)
+直接存取，假设使用4-字节校正:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+int n = M->cols;
+float *data = M->data.fl;
+data[i*n+j] = 3.0;
+直接存取，校正字节任意:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+int step = M->step/sizeof (float );
+float *data = M->data.fl;
+(data+i*step)[j] = 3.0;
+直接存取一个初始化的矩阵元素:
+double a[16];
+CvMat Ma = cvMat(3, 4, CV_64FC1, a);
+a[i*4+j] = 2.0; // Ma(i,j)=2.0;
+矩阵/向量操作
+
+矩阵-矩阵操作:
+CvMat *Ma, *Mb, *Mc;
+cvAdd(Ma, Mb, Mc); // Ma+Mb -> Mc
+cvSub(Ma, Mb, Mc); // Ma-Mb -> Mc
+cvMatMul(Ma, Mb, Mc); // Ma*Mb -> Mc
+按元素的矩阵操作:
+CvMat *Ma, *Mb, *Mc;
+cvMul(Ma, Mb, Mc); // Ma.*Mb -> Mc
+cvDiv(Ma, Mb, Mc); // Ma./Mb -> Mc
+cvAddS(Ma, cvScalar(-10.0), Mc); // Ma.-10 -> Mc
+向量乘积:
+double va[] = {1, 2, 3};
+double vb[] = {0, 0, 1};
+double vc[3];
+CvMat Va=cvMat(3, 1, CV_64FC1, va);
+CvMat Vb=cvMat(3, 1, CV_64FC1, vb);
+CvMat Vc=cvMat(3, 1, CV_64FC1, vc);
+double res=cvDotProduct(&Va,&Vb); // 点乘: Va . Vb -> res
+cvCrossProduct(&Va, &Vb, &Vc); // 向量积: Va x Vb -> Vc
+end{verbatim}
+注意 Va, Vb, Vc 在向量积中向量元素个数须相同.
+
+单矩阵操作:
+CvMat *Ma, *Mb;
+cvTranspose(Ma, Mb); // transpose(Ma) -> Mb (不能对自身进行转置)
+CvScalar t = cvTrace(Ma); // trace(Ma) -> t.val[0]
+double d = cvDet(Ma); // det(Ma) -> d
+cvInvert(Ma, Mb); // inv(Ma) -> Mb
+非齐次线性系统求解:
+CvMat* A = cvCreateMat(3,3,CV_32FC1);
+CvMat* x = cvCreateMat(3,1,CV_32FC1);
+CvMat* b = cvCreateMat(3,1,CV_32FC1);
+cvSolve(&A, &b, &x); // solve (Ax=b) for x
+特征值分析(针对对称矩阵):
+CvMat* A = cvCreateMat(3,3,CV_32FC1);
+CvMat* E = cvCreateMat(3,3,CV_32FC1);
+CvMat* l = cvCreateMat(3,1,CV_32FC1);
+cvEigenVV(&A, &E, &l); // l = A的特征值 (降序排列) ， E = 对应的特征向量 (每行)
+奇异值分解SVD:
+CvMat* A = cvCreateMat(3,3,CV_32FC1);
+CvMat* U = cvCreateMat(3,3,CV_32FC1);
+CvMat* D = cvCreateMat(3,3,CV_32FC1);
+CvMat* V = cvCreateMat(3,3,CV_32FC1);
+cvSVD(A, D, U, V, CV_SVD_U_T|CV_SVD_V_T); // A = U D V^T
+综述:
+OpenCV有针对矩阵操作的C语言函数. 许多其他方法提供了更加方便的C++接口，其效率与OpenCV一样.
+OpenCV将向量作为1维矩阵处理.
+矩阵按行存储，每行有4字节的校整.
+分配矩阵空间:
+CvMat* cvCreateMat(int rows, int cols, int type);
+type: 矩阵元素类型. 格式为CV_<bit_depth>(S|U|F)C<number_of_channels>. 
+例如: CV_8UC1 表示8位无符号单通道矩阵, CV_32SC2表示32位有符号双通道矩阵.
+例程:
+CvMat* M = cvCreateMat(4,4,CV_32FC1); 
+释放矩阵空间:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+cvReleaseMat(&M);
+复制矩阵:
+CvMat* M1 = cvCreateMat(4,4,CV_32FC1);
+CvMat* M2;
+M2=cvCloneMat(M1);
+初始化矩阵:
+double a[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+CvMat Ma=cvMat(3, 4, CV_64FC1, a);
+另一种方法: 
+CvMat Ma;
+cvInitMatHeader(&Ma, 3, 4, CV_64FC1, a);
+   
+初始化矩阵为单位阵:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+cvSetIdentity(M); // 这里似乎有问题，不成功
+存取矩阵元素
+
+假设需要存取一个2维浮点矩阵的第(i,j)个元素.
+间接存取矩阵元素:
+cvmSet(M,i,j,2.0); // Set M(i,j)
+t = cvmGet(M,i,j); // Get M(i,j)
+直接存取，假设使用4-字节校正:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+int n = M->cols;
+float *data = M->data.fl;
+data[i*n+j] = 3.0;
+直接存取，校正字节任意:
+CvMat* M = cvCreateMat(4,4,CV_32FC1);
+int step = M->step/sizeof (float );
+float *data = M->data.fl;
+(data+i*step)[j] = 3.0;
+直接存取一个初始化的矩阵元素:
+double a[16];
+CvMat Ma = cvMat(3, 4, CV_64FC1, a);
+a[i*4+j] = 2.0; // Ma(i,j)=2.0;
+矩阵/向量操作
+
+矩阵-矩阵操作:
+CvMat *Ma, *Mb, *Mc;
+cvAdd(Ma, Mb, Mc); // Ma+Mb -> Mc
+cvSub(Ma, Mb, Mc); // Ma-Mb -> Mc
+cvMatMul(Ma, Mb, Mc); // Ma*Mb -> Mc
+按元素的矩阵操作:
+CvMat *Ma, *Mb, *Mc;
+cvMul(Ma, Mb, Mc); // Ma.*Mb -> Mc
+cvDiv(Ma, Mb, Mc); // Ma./Mb -> Mc
+cvAddS(Ma, cvScalar(-10.0), Mc); // Ma.-10 -> Mc
+向量乘积:
+double va[] = {1, 2, 3};
+double vb[] = {0, 0, 1};
+double vc[3];
+CvMat Va=cvMat(3, 1, CV_64FC1, va);
+CvMat Vb=cvMat(3, 1, CV_64FC1, vb);
+CvMat Vc=cvMat(3, 1, CV_64FC1, vc);
+double res=cvDotProduct(&Va,&Vb); // 点乘: Va . Vb -> res
+cvCrossProduct(&Va, &Vb, &Vc); // 向量积: Va x Vb -> Vc
+end{verbatim}
+注意 Va, Vb, Vc 在向量积中向量元素个数须相同.
+
+单矩阵操作:
+CvMat *Ma, *Mb;
+cvTranspose(Ma, Mb); // transpose(Ma) -> Mb (不能对自身进行转置)
+CvScalar t = cvTrace(Ma); // trace(Ma) -> t.val[0]
+double d = cvDet(Ma); // det(Ma) -> d
+cvInvert(Ma, Mb); // inv(Ma) -> Mb
+非齐次线性系统求解:
+CvMat* A = cvCreateMat(3,3,CV_32FC1);
+CvMat* x = cvCreateMat(3,1,CV_32FC1);
+CvMat* b = cvCreateMat(3,1,CV_32FC1);
+cvSolve(&A, &b, &x); // solve (Ax=b) for x
+特征值分析(针对对称矩阵):
+CvMat* A = cvCreateMat(3,3,CV_32FC1);
+CvMat* E = cvCreateMat(3,3,CV_32FC1);
+CvMat* l = cvCreateMat(3,1,CV_32FC1);
+cvEigenVV(&A, &E, &l); // l = A的特征值 (降序排列) ， E = 对应的特征向量 (每行)
+奇异值分解SVD:
+CvMat* A = cvCreateMat(3,3,CV_32FC1);
+CvMat* U = cvCreateMat(3,3,CV_32FC1);
+CvMat* D = cvCreateMat(3,3,CV_32FC1);
+CvMat* V = cvCreateMat(3,3,CV_32FC1);
+cvSVD(A, D, U, V, CV_SVD_U_T|CV_SVD_V_T); // A = U D V^
